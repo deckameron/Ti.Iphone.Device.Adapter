@@ -285,10 +285,10 @@ function createBottomTabBar() {
     });
     
     var tabs = [
-        { icon: '🏠', label: 'Home' },
-        { icon: '🔍', label: 'Search' },
-        { icon: '❤️', label: 'Favorites' },
-        { icon: '👤', label: 'Profile' }
+        { label: 'Home' },
+        { label: 'Search' },
+        { label: 'Favorites' },
+        { label: 'Profile' }
     ];
     
     var tabWidth = Ti.Platform.displayCaps.platformWidth / tabs.length;
@@ -432,7 +432,7 @@ function createDetailView() {
     
     // Check for iPhone 17 series
     if (DeviceAdapter.isIPhone17Series()) {
-        Ti.API.info('✨ Running on iPhone 17 series!');
+        Ti.API.info('Running on iPhone 17 series!');
         // Enable special features for latest devices
     }
     
@@ -614,8 +614,8 @@ function exampleUsage() {
     win.add(watchButton);
     
     // Log device info for debugging
-    Ti.API.info('📱 Device Category: ' + DeviceAdapter.getInfo().category);
-    Ti.API.info('📐 Screen Height: ' + DeviceAdapter.getInfo().height + 'pt');
+    Ti.API.info('Device Category: ' + DeviceAdapter.getInfo().category);
+    Ti.API.info('Screen Height: ' + DeviceAdapter.getInfo().height);
     
     win.open();
 }
