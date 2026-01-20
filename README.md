@@ -7,7 +7,7 @@
 
 Make your Titanium apps look perfect on every iPhone model with minimal effort.
 
-[Features](#-features) • [Installation](#-installation) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [Examples](#-examples)
+[Features](https://github.com/deckameron/Ti.Iphone.Device.Adapter?tab=readme-ov-file#-features) • [Installation](https://github.com/deckameron/Ti.Iphone.Device.Adapter?tab=readme-ov-file#installation) • [Quick Start](https://github.com/deckameron/Ti.Iphone.Device.Adapter?tab=readme-ov-file#quick-start) • [Documentation](https://github.com/deckameron/Ti.Iphone.Device.Adapter?tab=readme-ov-file#documentation) • [Examples](https://github.com/deckameron/Ti.Iphone.Device.Adapter?tab=readme-ov-file#examples)
 
 ---
 
