@@ -1,12 +1,12 @@
 /**
  * DeviceAdapter - Responsive layout manager for iOS
- * Updated for iPhone 17 lineup (2025)
- * Usage: DeviceAdapter.select({ compact: value1, regular: value2, plus: value3, max: value4 })
+ * Audited and corrected against official Apple specs (Aug 2026)
+ * Fixes: iPhone 17/17 Pro height (874, not 844/852), iPhone Air height (912, not 932),
+ *        restored legacy Plus-size height (736), added iPhone 17e
  */
 
 var DeviceAdapter = (function() {
     
-    // Complete iOS device mapping with iPhone 17 lineup
     var DEVICE_SPECS = {
         // Compact (iPhone SE, 8, 7, 6s, 6)
         'compact': {
@@ -15,19 +15,25 @@ var DeviceAdapter = (function() {
             scale: [2, 3],
             models: ['iPhone SE', 'iPhone 8', 'iPhone 7', 'iPhone 6s', 'iPhone 6']
         },
-        // Regular (iPhone 17, 17 Pro, 16, 15, 14, 13, 12, X, XS, 11 Pro)
+        // Regular (includes legacy 5.5" Plus phones at 736 and iPhone 17/17 Pro at 874)
         'regular': {
-            heights: [852, 844, 812],
+            heights: [874, 844, 812, 736], // FIXED: added 874 (17/17 Pro), restored 736 (legacy Plus)
             logicalHeight: 844,
             scale: [2, 3],
-            models: ['iPhone 17', 'iPhone 17 Pro', 'iPhone 16', 'iPhone 15', 'iPhone 14', 'iPhone 13', 'iPhone 12', 'iPhone X', 'iPhone XS', 'iPhone 11 Pro']
+            models: [
+                'iPhone 17', 'iPhone 17 Pro', 'iPhone 17e', // FIXED: correct height + added 17e
+                'iPhone 16', 'iPhone 16e', 'iPhone 15', 'iPhone 14', 'iPhone 13', 'iPhone 12',
+                'iPhone X', 'iPhone XS', 'iPhone 11 Pro',
+                'iPhone 8 Plus', 'iPhone 7 Plus', 'iPhone 6s Plus', 'iPhone 6 Plus' // FIXED: restored
+            ]
         },
-        // Plus (iPhone 17 Air, Plus models, Pro Max 12-15)
+        // Plus (iPhone Air, Plus models, older Pro Max up to 15)
         'plus': {
-            heights: [932, 926, 896],
-            logicalHeight: 932,
+            heights: [926, 912, 896], // FIXED: 912 for iPhone Air (was wrongly 932)
+            logicalHeight: 926,
             scale: [3],
-            models: ['iPhone 17 Air', 'iPhone 16 Plus', 'iPhone 15 Plus', 'iPhone 14 Plus', 'iPhone 13 Pro Max', 'iPhone 12 Pro Max', 'iPhone 11 Pro Max']
+            models: ['iPhone Air', 'iPhone 16 Plus', 'iPhone 15 Plus', 'iPhone 14 Plus', // FIXED: renamed from "iPhone 17 Air"
+                      'iPhone 13 Pro Max', 'iPhone 12 Pro Max', 'iPhone 11 Pro Max', 'iPhone XS Max']
         },
         // Max (iPhone 17 Pro Max, 16 Pro Max)
         'max': {
@@ -41,9 +47,6 @@ var DeviceAdapter = (function() {
     var currentCategory = null;
     var deviceInfo = null;
     
-    /**
-     * Detects current device category
-     */
     function detectDeviceCategory() {
         if (currentCategory) return currentCategory;
         
@@ -51,11 +54,9 @@ var DeviceAdapter = (function() {
         var width = Ti.Platform.displayCaps.platformWidth;
         var dpi = Ti.Platform.displayCaps.dpi;
         
-        // Detect by screen height with precise matching
         for (var category in DEVICE_SPECS) {
             var heights = DEVICE_SPECS[category].heights;
             for (var i = 0; i < heights.length; i++) {
-                // Allow 15 points tolerance for detection
                 if (Math.abs(height - heights[i]) < 15) {
                     currentCategory = category;
                     break;
@@ -64,13 +65,13 @@ var DeviceAdapter = (function() {
             if (currentCategory) break;
         }
         
-        // Fallback: use height ranges to infer category
+        // Fallback thresholds updated to match corrected boundaries
         if (!currentCategory) {
             if (height <= 667) {
                 currentCategory = 'compact';
-            } else if (height <= 852) {
+            } else if (height <= 874) { // FIXED: was 852, missed real iPhone 17 height
                 currentCategory = 'regular';
-            } else if (height <= 932) {
+            } else if (height <= 926) { // FIXED: was 932
                 currentCategory = 'plus';
             } else {
                 currentCategory = 'max';
@@ -95,28 +96,13 @@ var DeviceAdapter = (function() {
         return currentCategory;
     }
     
-    /**
-     * Selects the appropriate value based on device
-     * @param {Object} values - Object with values for each category
-     * @returns {*} Selected value
-     * 
-     * Example:
-     * var fontSize = DeviceAdapter.select({
-     *     compact: 14,
-     *     regular: 16,
-     *     plus: 18,
-     *     max: 20
-     * });
-     */
     function select(values) {
         var category = detectDeviceCategory();
         
-        // Try to return exact category value
         if (values[category] !== undefined) {
             return values[category];
         }
         
-        // Fallback chain: try similar categories first
         var fallbackOrder = {
             'compact': ['regular', 'plus', 'max'],
             'regular': ['plus', 'compact', 'max'],
@@ -131,7 +117,6 @@ var DeviceAdapter = (function() {
             }
         }
         
-        // Last resort: return any available value
         for (var key in values) {
             if (values[key] !== undefined) {
                 return values[key];
@@ -141,19 +126,11 @@ var DeviceAdapter = (function() {
         return null;
     }
     
-    /**
-     * Simplified version: compact vs others only
-     */
     function selectSimple(compactValue, defaultValue) {
         var category = detectDeviceCategory();
         return category === 'compact' ? compactValue : defaultValue;
     }
     
-    /**
-     * Scales a value based on device category
-     * @param {Number} baseValue - Base value (for regular device)
-     * @param {Number} scaleFactor - Scale factor (default: 1)
-     */
     function scale(baseValue, scaleFactor) {
         var category = detectDeviceCategory();
         scaleFactor = scaleFactor || 1;
@@ -168,28 +145,20 @@ var DeviceAdapter = (function() {
         return baseValue * multipliers[category] * scaleFactor;
     }
     
-    /**
-     * Returns device information including possible models
-     */
     function getInfo() {
         detectDeviceCategory();
         return deviceInfo;
     }
     
-    /**
-     * Checks if device is one of the iPhone 17 series
-     */
+    // FIXED: heights now match the real confirmed values (874, 912, 956)
     function isIPhone17Series() {
         detectDeviceCategory();
         var height = deviceInfo.height;
-        // iPhone 17 series heights: 844, 852, 932, 956
-        return (Math.abs(height - 844) < 15 || 
-                Math.abs(height - 852) < 15 || 
-                Math.abs(height - 932) < 15 || 
-                Math.abs(height - 956) < 15);
+        return (Math.abs(height - 874) < 15 ||  // iPhone 17 / 17 Pro
+                Math.abs(height - 912) < 15 ||  // iPhone Air
+                Math.abs(height - 956) < 15);   // iPhone 17 Pro Max
     }
     
-    // Public API
     return {
         select: select,
         selectSimple: selectSimple,
@@ -197,7 +166,6 @@ var DeviceAdapter = (function() {
         getInfo: getInfo,
         isIPhone17Series: isIPhone17Series,
         
-        // Shortcuts for quick checks
         isCompact: function() { return detectDeviceCategory() === 'compact'; },
         isRegular: function() { return detectDeviceCategory() === 'regular'; },
         isPlus: function() { return detectDeviceCategory() === 'plus'; },
@@ -206,5 +174,4 @@ var DeviceAdapter = (function() {
     
 })();
 
-// Export for global use
 module.exports = DeviceAdapter;
